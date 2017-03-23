@@ -74,7 +74,7 @@ public class Person implements java.io.Serializable {
         this.lastName = lastName;
     }
     
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "person")
+    @OneToMany(mappedBy = "buyer")
     public Set<Expenses> getExpenses() {
         return expenses;
     }
