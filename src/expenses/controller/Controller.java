@@ -23,8 +23,6 @@ import javafx.scene.control.Button;
  * @author Stian Reistad Røgeberg
  */
 public class Controller {
-    private Person buyer;
-    private Expenses expense;
     private final View view;
     private final DBOperation db;
     private Button reg;
@@ -41,55 +39,16 @@ public class Controller {
         String firstName = view.getFirstNameField();
         String lastName = view.getLastNameField();
         
-        expense = new Expenses();
-        expense.setDate(new Date());
-        expense.setPurchase(view.getAmountField());
-            
-        if (db.registerNewPurchase(firstName, lastName, expense)) {
-            SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
-            
-            String text = String.format("Buyer: %s %s%nPrice: %.2f%nDate: %s",
-                    firstName, lastName, expense.getPurchase(), 
-                    sdf.format(expense.getDate()));
-            
-            view.setInformationArea(text);
-        } else {
-            final String error = "Klarte ikke lagre ny oppføring.";
-            view.setInformationArea(error);
-        }  
+        double amount = view.getAmountField();
+        boolean ok = db.registerNewPurchase(firstName, lastName, 
+                amount);
+            view.setBuyerInfo(firstName, lastName, amount, ok);
     }
     
     public void total() {
-        view.setInformationArea("");
-        Calendar now = Calendar.getInstance();
-        Integer year = now.get(Calendar.YEAR);
-        
         Iterable<Person> buyers = db.getTotal()::iterator;
-        
-        StringBuilder output = new StringBuilder();
-        output.append("Total oversikt\n".toUpperCase());
-        for (Person p : buyers) {
-            double sum = 0;
-            output.append(p.getFirstName())
-                    .append(" ")
-                    .append(p.getLastName())
-                    .append("\n");
-            
-            Iterator<Expenses> e = p.getExpenses().iterator();
-            while (e.hasNext())
-                sum += e.next().getPurchase();
-            
-            output.append("Totale kostnader hittil i året ")
-                    .append(year)
-                    .append("\n");
-            
-            DecimalFormat df = new DecimalFormat(".##");
-            output.append(df.format(sum))
-                    .append(" ")
-                    .append("kroner.\n\n");
-        } // end for-loop
-        view.setInformationArea(output.toString());
-    } // end method total
+        view.formatTotal(buyers);
+    }
     
     public List<Person> users() {
         return db.getPersons();

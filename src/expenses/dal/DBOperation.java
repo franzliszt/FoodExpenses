@@ -8,6 +8,7 @@ package expenses.dal;
 import entities.Expenses;
 import entities.Person;
 import expenses.util.HibernateUtil;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -16,6 +17,7 @@ import org.hibernate.Criteria;
 import org.hibernate.JDBCException;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
 
@@ -25,6 +27,7 @@ import org.hibernate.criterion.Projections;
  */
 public class DBOperation {
     private Session session;
+    private Transaction trx;
     
     /**
      * Starting a session to be used for transactions.
@@ -38,9 +41,10 @@ public class DBOperation {
      * @param buyer the purchase.
      * @param expens purchase amount.
      */
-    public boolean registerNewPurchase(String firstName, String lastName, Expenses expens) {
-        boolean result = true;
+    public boolean registerNewPurchase(String firstName, String lastName, double amount) {
+       boolean result = true;
         try {
+            trx = session.beginTransaction();
             Person person = searchPerson(firstName, lastName);
             if (person == null) {
                 person = new Person();
@@ -48,17 +52,20 @@ public class DBOperation {
                 person.setLastName(lastName);
                 session.save(person);
             }
+            Expenses expens = new Expenses(amount, new Date(), person);
             expens.setBuyer(person);
             person.getExpenses().add(expens);
             
             session.save(expens);
-            session.getTransaction().commit();
+            trx.commit();
         } catch (JDBCException e) {
+            if (trx != null) trx.rollback();
+            System.out.println("****" + e.toString());
             result = false;
         } finally {
-            //session.close();
-            return result;
+            session.close();
         }
+        return result;
     }
     
     /**
@@ -67,8 +74,6 @@ public class DBOperation {
      * @return the person if already exists or null.
      */
     private Person searchPerson(String firstName, String lastName) {
-        session.beginTransaction();
-        
         Query query = session.createQuery("from Person");
         List<Person> persons = query.list();
         Iterator<Person> iter = persons.iterator();
@@ -79,16 +84,17 @@ public class DBOperation {
             if (p.getFirstName().equals(firstName) && p.getLastName().equals(lastName))
                 foundPerson = p;
         }
-        session.close();
         return foundPerson;
     }
     
     
     public Stream<Person> getTotal() {
-        session.beginTransaction();
+        session = HibernateUtil.getSessionFactory().openSession();
+        trx = session.beginTransaction();
         Query query = session.createQuery("from Person");
         List<Person> list = query.list();
-        session.getTransaction();
+        trx.commit();
+        // ??? session.close();
         return list.stream();
     }
     

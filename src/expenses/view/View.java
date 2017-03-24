@@ -5,8 +5,13 @@
  */
 package expenses.view;
 
+import entities.Expenses;
 import entities.Person;
 import expenses.controller.Controller;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import javafx.geometry.Insets;
@@ -28,7 +33,7 @@ public class View {
     private static final int HEIGHT = 500;
     private static final int WIDTH = 700;
     
-    private final TextField firstName;
+    private TextField firstName;
     private final TextField lastName;
     private final TextField amount;
     private final Label buyerLabel;
@@ -54,12 +59,11 @@ public class View {
         
         firstName = new TextField();
         firstName.setPromptText("Enter your first name");
-        //GridPane.setConstraints(firstName, 1, 0);
+        GridPane.setConstraints(firstName, 1, 0);
         
         
         dropdownList = new ComboBox();
-        //fillDropdown(dropdownList);
-        GridPane.setConstraints(dropdownList, 1, 0);
+        //GridPane.setConstraints(dropdownList, 1, 0);
         
         lastName = new TextField();
         lastName.setPromptText("Enter your last name");
@@ -82,11 +86,11 @@ public class View {
         information = new TextArea();
         GridPane.setConstraints(information, 0, 3, 3, 3);
         
-        root.getChildren().addAll(buyerLabel, dropdownList, lastName, 
+        root.getChildren().addAll(buyerLabel, firstName, lastName, 
                 amountLabel, amount, register, exit, total, information);
         
         controller = new Controller(this);
-        
+        //fillDropdown();
         
         Scene scene = new Scene(root, WIDTH, HEIGHT);
         scene.getStylesheets().add("./expenses/styles/styles.css");
@@ -128,14 +132,67 @@ public class View {
         information.setText(text);
     }
     
-    private void fillDropdown(ComboBox box) {
+     
+    
+    private void fillDropdown() {
         List<Person> list = controller.users();
         Iterator<Person> iter = list.iterator();
         
         while (iter.hasNext()) {
             Person p = (Person) iter.next();
             String name = p.getFirstName() + " " + p.getLastName();
-            box.getItems().add(name);
+            dropdownList.getItems().add(p);
         }
+    }
+    
+    public void formatTotal(Iterable<Person> buyers) {
+        setInformationArea("");
+        Calendar now = Calendar.getInstance();
+        Integer year = now.get(Calendar.YEAR);
+        
+        StringBuilder output = new StringBuilder();
+        output.append("Total oversikt\n".toUpperCase());
+        for (Person p : buyers) {
+            double sum = 0;
+            output.append(p.getFirstName())
+                    .append(" ")
+                    .append(p.getLastName())
+                    .append("\n");
+            
+            Iterator<Expenses> e = p.getExpenses().iterator();
+            while (e.hasNext())
+                sum += e.next().getPurchase();
+            
+            output.append("Totale kostnader hittil i året ")
+                    .append(year)
+                    .append("\n");
+            
+            DecimalFormat df = new DecimalFormat(".##");
+            output.append(df.format(sum))
+                    .append(" ")
+                    .append("kroner.\n\n");
+        } // end for-loop
+        setInformationArea(output.toString());
+    }
+
+    public void setBuyerInfo(String firstName, 
+            String lastName, double amount, boolean ok) {
+        clearInputFields();
+        if (ok) {
+            SimpleDateFormat sdf =new SimpleDateFormat();
+            String text = String.format("Buyer: %s %s%nPrice: %.2f%nDate: %s",
+                    firstName, lastName, amount, 
+                    sdf.format(new Date()));
+            setInformationArea(text);
+        } else {
+            final String error = "Klarte ikke lagre ny oppføring.";
+            setInformationArea(error); 
+        }  
+    }
+    
+    public void clearInputFields() {
+        firstName.setText("");
+        lastName.setText("");
+        amount.setText("");
     }
 }
