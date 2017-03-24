@@ -17,12 +17,11 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import static javax.persistence.TemporalType.DATE;
 import org.hibernate.annotations.GenericGenerator;
 
 /**
  *
- * @author Stian
+ * @author Stian Reistad Røgeberg
  */
 @Entity
 @Table(name = "Expenses")
@@ -60,6 +59,10 @@ public class Expenses implements java.io.Serializable {
         this.purchase = purchase;
     }
 
+    /**
+     *
+     * @return
+     */
     @Temporal(TemporalType.DATE) @NotNull
     @Column(nullable = false, name = "Date", unique = false)
     public Date getDate() {

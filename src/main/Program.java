@@ -8,7 +8,13 @@ package main;
 import entities.Expenses;
 import entities.Person;
 import expenses.util.HibernateUtil;
+import expenses.view.View;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import javafx.application.Application;
+import javafx.stage.Stage;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
@@ -16,12 +22,17 @@ import org.hibernate.cfg.Configuration;
 
 /**
  *
- * @author Stian
+ * @author Stian Reistad Røgeberg
  */
-public class Program {
+public class Program extends Application {
+    @Override
+    public void start(Stage stage) {
+        View view = new View(stage);
+        stage.show();
+    }
+    
     public static void main(String[] args) {
-        createDB();
-        insert();
+        launch(args);
     }
     
     static void createDB() {
@@ -39,10 +50,13 @@ public class Program {
         Session session = HibernateUtil.getSessionFactory().openSession();
         session.beginTransaction();
         
-        Person person = new Person();
+        Person person = finnPerson("Donald", "Duck");
+        if (person == null) return;
+        
+        /*Person person = new Person();
         person.setFirstName("Donald");
         person.setLastName("Duck");
-        session.save(person);
+        session.save(person);*/
         
         Expenses expenses = new Expenses();
         expenses.setDate(new Date());
@@ -54,5 +68,22 @@ public class Program {
         session.save(expenses);
         session.getTransaction().commit();
         System.out.println("Done");
+    }
+    
+    static Person finnPerson(String firstName, String lastName) {
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        session.beginTransaction();
+        
+        Query query = session.createQuery("from Person");
+        List<Person> persons = query.list();
+        Iterator<Person> iter = persons.iterator();
+        
+        Person foundPerson = null;
+        while (iter.hasNext()) {
+            Person p = iter.next();
+            if (p.getFirstName().equals(firstName) && p.getLastName().equals(lastName))
+                foundPerson = p;
+        }
+        return foundPerson;
     }
 }
