@@ -11,9 +11,13 @@ import expenses.util.HibernateUtil;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
+import org.hibernate.Criteria;
 import org.hibernate.JDBCException;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.criterion.ProjectionList;
+import org.hibernate.criterion.Projections;
 
 /**
  *
@@ -79,20 +83,21 @@ public class DBOperation {
         return foundPerson;
     }
     
-    // hent alle kjøp: Kjøpers antall, kjøpers totalsum
-    public List<Person> getTotal() {
+    
+    public Stream<Person> getTotal() {
         session.beginTransaction();
         Query query = session.createQuery("from Person");
         List<Person> list = query.list();
+        session.getTransaction();
+        return list.stream();
+    }
+    
+    public List<Person> getPersons() {
+        session.beginTransaction();
+        Query query = session.createQuery("from Person");
         
-        list.forEach(p -> {
-            
-            System.out.println("Buyer: " + p.getFirstName());
-            Set<Expenses> ex =  p.getExpenses();
-            ex.forEach(e -> {
-                System.out.println(e.getPurchase());
-            });
-        });
-        return null;
+        List<Person> list = query.list();
+        
+        return list;
     }
 }

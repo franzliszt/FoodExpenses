@@ -5,10 +5,15 @@
  */
 package expenses.view;
 
+import entities.Person;
 import expenses.controller.Controller;
+import java.util.Iterator;
+import java.util.List;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -21,7 +26,7 @@ import javafx.stage.Stage;
  */
 public class View {
     private static final int HEIGHT = 500;
-    private static final int WIDTH = 600;
+    private static final int WIDTH = 700;
     
     private final TextField firstName;
     private final TextField lastName;
@@ -32,12 +37,14 @@ public class View {
     private final Button register;
     private final Button exit;
     private final Button total;
+    private final ComboBox dropdownList;
     
     private final Controller controller;
     
     public View(Stage stage) {
         stage.setTitle("Registrering av handlesum");
         GridPane root = new GridPane();
+        root.setAlignment(Pos.TOP_CENTER);
         root.setPadding(new Insets(10, 10, 10, 10));
         root.setVgap(5);
         root.setHgap(5);
@@ -47,7 +54,12 @@ public class View {
         
         firstName = new TextField();
         firstName.setPromptText("Enter your first name");
-        GridPane.setConstraints(firstName, 1, 0);
+        //GridPane.setConstraints(firstName, 1, 0);
+        
+        
+        dropdownList = new ComboBox();
+        //fillDropdown(dropdownList);
+        GridPane.setConstraints(dropdownList, 1, 0);
         
         lastName = new TextField();
         lastName.setPromptText("Enter your last name");
@@ -70,12 +82,14 @@ public class View {
         information = new TextArea();
         GridPane.setConstraints(information, 0, 3, 3, 3);
         
-        root.getChildren().addAll(buyerLabel, firstName, lastName, 
+        root.getChildren().addAll(buyerLabel, dropdownList, lastName, 
                 amountLabel, amount, register, exit, total, information);
         
         controller = new Controller(this);
         
+        
         Scene scene = new Scene(root, WIDTH, HEIGHT);
+        scene.getStylesheets().add("./expenses/styles/styles.css");
         stage.setScene(scene);
         
     }
@@ -94,11 +108,7 @@ public class View {
     
     private boolean checkAmount(String input) {
         String regex = "^(([0-9]+)[,]([0-9]{2}))";
-         if (!input.matches(regex)) {
-             // set error meesage
-             return false;
-         }
-         return true;
+         return input.matches(regex);
          
     }
     
@@ -116,5 +126,16 @@ public class View {
     
     public void setInformationArea(String text) {
         information.setText(text);
+    }
+    
+    private void fillDropdown(ComboBox box) {
+        List<Person> list = controller.users();
+        Iterator<Person> iter = list.iterator();
+        
+        while (iter.hasNext()) {
+            Person p = (Person) iter.next();
+            String name = p.getFirstName() + " " + p.getLastName();
+            box.getItems().add(name);
+        }
     }
 }

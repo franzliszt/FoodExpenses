@@ -62,7 +62,7 @@ public class Person implements java.io.Serializable {
         this.firstName = firstName;
     }
 
-    @Column(name = "Lastname", nullable = false)
+    @Column(name = "LastName", nullable = false)
     public String getLastName() {
         return lastName;
     }
