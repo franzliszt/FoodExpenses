@@ -132,17 +132,19 @@ public class View {
         information.setText(text);
     }
     
-     
-    
     private void fillDropdown() {
         List<Person> list = controller.users();
-        Iterator<Person> iter = list.iterator();
+        list.stream().forEach(p -> {
+            String name = p.getFirstName() + " " + p.getLastName();
+            dropdownList.getItems().add(name);
+        });
         
+        /*
         while (iter.hasNext()) {
             Person p = (Person) iter.next();
             String name = p.getFirstName() + " " + p.getLastName();
-            dropdownList.getItems().add(p);
-        }
+            dropdownList.getItems().add(name);
+        }*/
     }
     
     public void formatTotal(Iterable<Person> buyers) {

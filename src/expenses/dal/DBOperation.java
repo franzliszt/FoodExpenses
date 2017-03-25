@@ -33,17 +33,20 @@ public class DBOperation {
      * Starting a session to be used for transactions.
      */
     public DBOperation() {
-        session = HibernateUtil.getSessionFactory().openSession();
+        
     }
     
     /**
      * Register a new purchase.
-     * @param buyer the purchase.
-     * @param expens purchase amount.
+     * @param firstName
+     * @param lastName
+     * @param amount
+     * @return 
      */
     public boolean registerNewPurchase(String firstName, String lastName, double amount) {
        boolean result = true;
         try {
+            session = HibernateUtil.getSessionFactory().openSession();
             trx = session.beginTransaction();
             Person person = searchPerson(firstName, lastName);
             if (person == null) {
@@ -52,6 +55,7 @@ public class DBOperation {
                 person.setLastName(lastName);
                 session.save(person);
             }
+            
             Expenses expens = new Expenses(amount, new Date(), person);
             expens.setBuyer(person);
             person.getExpenses().add(expens);

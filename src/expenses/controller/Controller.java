@@ -5,15 +5,9 @@
  */
 package expenses.controller;
 
-import entities.Expenses;
 import entities.Person;
 import expenses.dal.DBOperation;
 import expenses.view.View;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
