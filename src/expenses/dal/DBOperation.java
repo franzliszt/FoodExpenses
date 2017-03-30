@@ -86,7 +86,7 @@ public class DBOperation {
         return list.stream();
     }
     
-    // Not yet in use...
+    
     public List<Person> getPersons() {
         session = HibernateUtil.getSessionFactory().openSession();
         session.beginTransaction();
