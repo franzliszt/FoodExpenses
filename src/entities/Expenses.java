@@ -6,6 +6,7 @@
 package entities;
 
 import com.sun.istack.internal.NotNull;
+import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -25,7 +26,7 @@ import org.hibernate.annotations.GenericGenerator;
  */
 @Entity
 @Table(name = "Expenses")
-public class Expenses implements java.io.Serializable {
+public class Expenses implements Serializable {
     private Integer id;
     private double purchase;
     private Date date;

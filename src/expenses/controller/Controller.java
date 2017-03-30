@@ -19,24 +19,24 @@ import javafx.scene.control.Button;
 public class Controller {
     private final View view;
     private final DBOperation db;
-    private Button reg;
-    private Button exit;
-    private Button total;
+    private final Button register;
+    private final Button exit;
+    private final Button total;
     
-    public Controller(View view) {
+    public Controller(View view, Button register, Button total, Button exit) {
         this.view = view;
+        this.register = register;
+        this.exit = exit;
+        this.total = total;
         db = new DBOperation();
         createListeners();
     }
     
     private void newPurchase() {
-        String firstName = view.getFirstNameField();
-        String lastName = view.getLastNameField();
-        
+        String buyer = view.getBuyer();
         double amount = view.getAmountField();
-        boolean ok = db.registerNewPurchase(firstName, lastName, 
-                amount);
-            view.setBuyerInfo(firstName, lastName, amount, ok);
+        boolean ok = db.registerNewPurchase(buyer, amount);
+        view.setBuyerInfo(buyer, amount, ok);
     }
     
     public void total() {
@@ -49,19 +49,8 @@ public class Controller {
     }
 
     private void createListeners() {
-        reg = view.getRegisterButton();
-        reg.setOnAction((ActionEvent t) -> {
-            newPurchase();
-        });
-        
-        exit = view.getExitButton();
-        exit.setOnAction((ActionEvent e) -> {
-            System.exit(0);
-        });
-        
-        total = view.getTotalButton();
-        total.setOnAction((ActionEvent e) -> {
-           total(); 
-        });
+        register.setOnAction((ActionEvent e) -> { newPurchase(); });
+        exit.setOnAction((ActionEvent e) -> { System.exit(0); });
+        total.setOnAction((ActionEvent e) -> { total(); });
     }
 }

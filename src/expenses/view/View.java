@@ -33,8 +33,6 @@ public class View {
     private static final int HEIGHT = 500;
     private static final int WIDTH = 700;
     
-    private TextField firstName;
-    private final TextField lastName;
     private final TextField amount;
     private final Label buyerLabel;
     private final Label amountLabel;
@@ -43,7 +41,6 @@ public class View {
     private final Button exit;
     private final Button total;
     private final ComboBox dropdownList;
-    
     private final Controller controller;
     
     public View(Stage stage) {
@@ -57,22 +54,14 @@ public class View {
         buyerLabel = new Label("Buyer: ");
         GridPane.setConstraints(buyerLabel, 0, 0);
         
-        firstName = new TextField();
-        firstName.setPromptText("Enter your first name");
-        GridPane.setConstraints(firstName, 1, 0);
-        
-        
         dropdownList = new ComboBox();
-        //GridPane.setConstraints(dropdownList, 1, 0);
-        
-        lastName = new TextField();
-        lastName.setPromptText("Enter your last name");
-        GridPane.setConstraints(lastName, 2, 0);
+        GridPane.setConstraints(dropdownList, 1, 0);
         
         amountLabel = new Label("Amount: ");
         GridPane.setConstraints(amountLabel, 0, 1);
         
         amount = new TextField();
+        amount.setPromptText("Ex. 155.50");
         GridPane.setConstraints(amount, 1, 1);// hente verdier og sende t
         register = new Button("Register");
         GridPane.setConstraints(register, 0, 2);
@@ -86,24 +75,15 @@ public class View {
         information = new TextArea();
         GridPane.setConstraints(information, 0, 3, 3, 3);
         
-        root.getChildren().addAll(buyerLabel, firstName, lastName, 
+        root.getChildren().addAll(buyerLabel, dropdownList, 
                 amountLabel, amount, register, exit, total, information);
         
-        controller = new Controller(this);
-        //fillDropdown();
+        controller = new Controller(this, register, total, exit);
+        fillDropdown();
         
         Scene scene = new Scene(root, WIDTH, HEIGHT);
         scene.getStylesheets().add("./expenses/styles/styles.css");
         stage.setScene(scene);
-        
-    }
-    
-    public String getFirstNameField() {
-        return firstName.getText();
-    }
-    
-    public String getLastNameField() {
-        return lastName.getText();
     }
     
     public double getAmountField() {
@@ -113,78 +93,67 @@ public class View {
     private boolean checkAmount(String input) {
         String regex = "^(([0-9]+)[,]([0-9]{2}))";
          return input.matches(regex);
-         
-    }
-    
-    public Button getRegisterButton() {
-        return register;
-    }
-    
-    public Button getExitButton() {
-        return exit;
-    }
-    
-    public Button getTotalButton() {
-        return total;
     }
     
     public void setInformationArea(String text) {
         information.setText(text);
     }
     
+    // Not implemented...
     private void fillDropdown() {
         List<Person> list = controller.users();
+        dropdownList.setPromptText("Choose buyer");
         list.stream().forEach(p -> {
             String name = p.getFirstName() + " " + p.getLastName();
             dropdownList.getItems().add(name);
         });
-        
-        /*
-        while (iter.hasNext()) {
-            Person p = (Person) iter.next();
-            String name = p.getFirstName() + " " + p.getLastName();
-            dropdownList.getItems().add(name);
-        }*/
+    }
+    
+    private Integer getCurrentYear() {
+        Calendar now = Calendar.getInstance();
+        Integer year = now.get(Calendar.YEAR);
+        return year;
     }
     
     public void formatTotal(Iterable<Person> buyers) {
         setInformationArea("");
-        Calendar now = Calendar.getInstance();
-        Integer year = now.get(Calendar.YEAR);
         
         StringBuilder output = new StringBuilder();
         output.append("Total oversikt\n".toUpperCase());
         for (Person p : buyers) {
             double sum = 0;
+            Iterator<Expenses> e = p.getExpenses().iterator();
+            while (e.hasNext())
+                sum += e.next().getPurchase();
+            
+            if (sum <= 0) continue;
             output.append(p.getFirstName())
                     .append(" ")
                     .append(p.getLastName())
                     .append("\n");
             
-            Iterator<Expenses> e = p.getExpenses().iterator();
-            while (e.hasNext())
-                sum += e.next().getPurchase();
+            
             
             output.append("Totale kostnader hittil i året ")
-                    .append(year)
+                    .append(getCurrentYear())
                     .append("\n");
             
-            DecimalFormat df = new DecimalFormat(".##");
-            output.append(df.format(sum))
-                    .append(" ")
-                    .append("kroner.\n\n");
+            
+                DecimalFormat df = new DecimalFormat(".##");
+                output.append(df.format(sum))
+                        .append(" ")
+                        .append("kroner.\n\n");
+            
         } // end for-loop
         setInformationArea(output.toString());
     }
 
-    public void setBuyerInfo(String firstName, 
-            String lastName, double amount, boolean ok) {
+    public void setBuyerInfo(String buyer,double amount, boolean ok) {
         clearInputFields();
         if (ok) {
             SimpleDateFormat sdf =new SimpleDateFormat();
-            String text = String.format("Buyer: %s %s%nPrice: %.2f%nDate: %s",
-                    firstName, lastName, amount, 
-                    sdf.format(new Date()));
+            String text = String.format("Buyer: %s %nPrice: %.2f%nDate: %s",
+                    buyer, amount, sdf.format(new Date()));
             setInformationArea(text);
         } else {
             final String error = "Klarte ikke lagre ny oppføring.";
@@ -192,9 +161,11 @@ public class View {
         }  
     }
     
+    public String getBuyer() {
+        return (String) dropdownList.getValue();
+    }
+    
     public void clearInputFields() {
-        firstName.setText("");
-        lastName.setText("");
         amount.setText("");
     }
 }
